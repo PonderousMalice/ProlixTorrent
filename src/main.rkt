@@ -46,8 +46,6 @@
 (define compact #t)
 (define event "started")
 
-;  [left (~v (dict-ref info #"length"))]
-
       
 (define-values (status headers in)
   (tracker_get announce_url info_hash peer_id uploaded downloaded left compact event))
