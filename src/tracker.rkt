@@ -5,17 +5,22 @@
 (require racket/random)
 (require net/url)
 (require net/http-client)
+; (require net/ip)
 (require file/sha1)
 ;(require openssl)
 
 (require "bdecoder.rkt")
 (require "bencoder.rkt")
+(require "util.rkt")
 
 (struct torrent (announce_url
                  info_hash
                  uploaded
                  downloaded
                  left))
+
+(struct peer (ip
+              port))
 
 (define test_file "C:\\Users\\david\\Downloads\\debian-10.5.0-amd64-DVD-1.iso.torrent")
 
@@ -54,11 +59,34 @@
                  #:method "GET"
                  #:port (url-port url)))
 
+(define (convert_port bytes)
+  (+ (arithmetic-shift (bytes-ref bytes 0) 8) (bytes-ref bytes 1)))
+
+(define (convert_peers peers)
+  ; The compact response is 6 bytes per peer.
+  ; The first 4 bytes are the host
+  ; the last 2 bytes are the port
+  ; Both in network byte order
+  (for/list ([b (bytes-split peers 6)])
+    (let ([ip (foldl (lambda (e res)
+                      (string-append res (~v e) ".")) "" (bytes->list (subbytes b 0 4)))]
+          [port (convert_port (subbytes b 4))])
+      
+      (peer (substring ip 0 (- (string-length ip) 1)) port))))
+
 
 (define (start_torrent path)
   (define-values (status headers in)
     (contact_tracker (init_torrent (parse_file path))))
   (displayln status)
   (displayln headers)
-  (displayln (port->string in))
-  (close-input-port in))
+  (define juif (bdecode in))
+  (define peers (convert_peers (dict-ref juif #"peers")))
+  (displayln juif)
+  (close-input-port in)
+  (displayln (peer-ip (list-ref peers 0)))
+  (displayln (peer-port (list-ref peers 0)))
+  
+  peers)
+  
+  
