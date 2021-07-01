@@ -1,17 +1,14 @@
 #lang racket
 
-(define (bdecode s)
-  (let* ([str (open-input-string s)]
+(define (bdecode str)
+  (let* (;[str (open-input-string s)]
          [c (peek-char str)])
     (cond
       [(char=? c #\i) (bdecode_int str)]
-   ;   [(char=? c #\d) (bdecode_dic s)]
-   ;   [(char=? c #\l) (bdecode_lst s)]
+      [(char=? c #\d) (bdecode_dic str)]
+      [(char=? c #\l) (bdecode_lst str)]
       [(char-numeric? c) (bdecode_str str)]
-     )
-
-   ; (display (read-char str))
-             ))
+     )))
 
 (define (bdecode_int s)
   ; skips 'i'
@@ -26,7 +23,20 @@
                                       c)))])
     (read-string length s)))
 
+(define (bdecode_lst s)
+  ; skips 'l'
+  (read-char s)
+  (for/list ([c (in-port peek-char s)]
+             #:break (char=? c #\e))
+    (bdecode s)))
 
+(define (bdecode_dic s)
+  ; skips 'd'
+  (read-char s)
+  (for/list ([c (in-port peek-char s)]
+             #:break (char=? c #\e))
+    (cons (bdecode_str s) (bdecode s))))
+    
 ; utilitary functions
 (define (ctoi c)
   (cond
