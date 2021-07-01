@@ -1,5 +1,7 @@
 #lang racket
 
+(provide bdecode)
+
 (define (bdecode str)
   (let* (;[str (open-input-string s)]
          [c (peek-char str)])
@@ -8,6 +10,7 @@
       [(char=? c #\d) (bdecode_dic str)]
       [(char=? c #\l) (bdecode_lst str)]
       [(char-numeric? c) (bdecode_str str)]
+      [else (display "pute\n") (displayln c)]
      )))
 
 (define (bdecode_int s)
@@ -19,23 +22,28 @@
 
 (define (bdecode_str s)
   (let ([length (stoi (list->string (for/list ([c (in-input-port-chars s)]
-                                               #:break (char=? c #\:))
+                                               #:break (not (char-numeric? c)))
                                       c)))])
-    (read-string length s)))
+    (read-bytes length s)))
 
 (define (bdecode_lst s)
   ; skips 'l'
   (read-char s)
-  (for/list ([c (in-port peek-char s)]
+  (let ([res (for/list ([c (in-port peek-char s)]
              #:break (char=? c #\e))
-    (bdecode s)))
+    (bdecode s))])
+        (read-char s)
+    res))
 
 (define (bdecode_dic s)
   ; skips 'd'
   (read-char s)
-  (for/list ([c (in-port peek-char s)]
+  (let ([res (for/list ([c (in-port peek-char s)]
              #:break (char=? c #\e))
-    (cons (bdecode_str s) (bdecode s))))
+    (cons (bytes->string/utf-8 (bdecode_str s)) (bdecode s)))])
+    (read-char s)
+    res))
+        
     
 ; utilitary functions
 (define (ctoi c)
