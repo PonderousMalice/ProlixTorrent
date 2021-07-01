@@ -25,5 +25,3 @@
                           (string-append res (bencode_str (car e)) (bencode (cdr e))))
                         "d" (dict->list d))
                  "e"))
-                   
-
