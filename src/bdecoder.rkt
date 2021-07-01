@@ -11,7 +11,7 @@
       [(char=? c #\d) (bdecode_dic port)]
       [(char=? c #\l) (bdecode_lst port)]
       [(char-numeric? c) (bdecode_str port)]
-      [else (display "pute\n") (displayln c)]
+      [else (raise "Bdecoder - invalid formatting")]
       )))
 
 (define (bdecode_int s)
@@ -39,8 +39,8 @@
 (define (bdecode_dic s)
   ; skips 'd'
   (read-byte s)
-  (let ([res (for/list ([c (in-port peek-char s)]
+  (let ([res (for/hash ([c (in-port peek-char s)]
                         #:break (char=? c #\e))
-               (cons (bdecode_str s) (bdecode s)))])
+               (values (bdecode_str s) (bdecode s)))])
     (read-byte s)
     res))

@@ -2,14 +2,19 @@
 
 (provide bencode)
 
+; it's buggy on multi-files torrent
+; but I don't use it so who cares lol
+
 (define (bencode s)
   (cond
-    [(string? s) (bencode_str s)]
     [(number? s) (bencode_int s)]
-    [(dict? s) (bencode_dic s)]
+  ;  [(and (dict? s) (bytes? (car s))) (bencode_dic s)]
+    ;   [(and (pair? s) (bytes? (car s))) (bencode_pair s)]
     [(list? s) (bencode_lst s)]
     [(bytes? s) (bencode_str s)]
-    [else "unknown type"]))
+    [(hash? s) (bencode_dic s)]
+ 
+    [else (error "Bencoder - unknown type")]))
   
 (define (bencode_str str)
   (bytes-append (string->bytes/utf-8 (~v (bytes-length str))) #":" str))
@@ -28,3 +33,6 @@
                          (bytes-append res (bencode_str (car e)) (bencode (cdr e))))
                        #"d" (dict->list d))
                 #"e"))
+
+(define (bencode_pair p)
+  (bytes-append #"d" (bencode_str (car p)) (bencode (cdr p)) #"e"))
