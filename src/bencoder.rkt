@@ -20,11 +20,11 @@
 (define (bencode_lst l)
   (bytes-append
    (foldl (lambda (e res)
-           (bytes-append res (bencode e))) #"l" l)
-  #"e"))
+            (bytes-append res (bencode e))) #"l" l)
+   #"e"))
 
 (define (bencode_dic d)
   (bytes-append (foldl (lambda (e res)
-                          (bytes-append res (bencode_str (car e)) (bencode (cdr e))))
-                        #"d" (dict->list d))
-                 #"e"))
+                         (bytes-append res (bencode_str (car e)) (bencode (cdr e))))
+                       #"d" (dict->list d))
+                #"e"))

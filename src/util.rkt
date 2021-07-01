@@ -18,6 +18,6 @@
 (define (stoi str)
   (let ([len (string-length str)])
     (cond
-    [(equal? len 0) 0]
-    [(equal? len 1) (ctoi (string-ref str 0))]
-    [else (+ (ctoi (string-ref str (- len 1))) (* 10 (stoi (substring str 0 (- len 1)))))])))
+      [(equal? len 0) 0]
+      [(equal? len 1) (ctoi (string-ref str 0))]
+      [else (+ (ctoi (string-ref str (- len 1))) (* 10 (stoi (substring str 0 (- len 1)))))])))

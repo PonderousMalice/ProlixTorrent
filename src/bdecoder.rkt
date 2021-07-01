@@ -4,23 +4,22 @@
 
 (provide bdecode)
 
-(define (bdecode str)
-  (let* (;[str (open-input-string s)]
-         [c (peek-char str)])
+(define (bdecode port)
+  (let* ([c (integer->char (peek-byte port))])
     (cond
-      [(char=? c #\i) (bdecode_int str)]
-      [(char=? c #\d) (bdecode_dic str)]
-      [(char=? c #\l) (bdecode_lst str)]
-      [(char-numeric? c) (bdecode_str str)]
+      [(char=? c #\i) (bdecode_int port)]
+      [(char=? c #\d) (bdecode_dic port)]
+      [(char=? c #\l) (bdecode_lst port)]
+      [(char-numeric? c) (bdecode_str port)]
       [else (display "pute\n") (displayln c)]
-     )))
+      )))
 
 (define (bdecode_int s)
   ; skips 'i'
-  (read-char s)
+  (read-byte s)
   (stoi (list->string (for/list ([c (in-input-port-chars s)]
-             #:break (char=? c #\e))
-    c))))
+                                 #:break (char=? c #\e))
+                        c))))
 
 (define (bdecode_str s)
   (let ([length (stoi (list->string (for/list ([c (in-input-port-chars s)]
@@ -30,18 +29,18 @@
 
 (define (bdecode_lst s)
   ; skips 'l'
-  (read-char s)
+  (read-byte s)
   (let ([res (for/list ([c (in-port peek-char s)]
-             #:break (char=? c #\e))
-    (bdecode s))])
-        (read-char s)
+                        #:break (char=? c #\e))
+               (bdecode s))])
+    (read-byte s)
     res))
 
 (define (bdecode_dic s)
   ; skips 'd'
-  (read-char s)
+  (read-byte s)
   (let ([res (for/list ([c (in-port peek-char s)]
-             #:break (char=? c #\e))
-    (cons (bdecode_str s) (bdecode s)))])
-    (read-char s)
+                        #:break (char=? c #\e))
+               (cons (bdecode_str s) (bdecode s)))])
+    (read-byte s)
     res))
