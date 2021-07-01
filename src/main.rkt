@@ -42,9 +42,7 @@
   (displayln status)
   (displayln headers)
   (displayln (port->string in))
-  (close-input-port in)
-  
-                   
+  (close-input-port in)                
   )
 
 
