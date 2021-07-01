@@ -1,27 +1,30 @@
 #lang racket
 
+(provide bencode)
+
 (define (bencode s)
   (cond
     [(string? s) (bencode_str s)]
     [(number? s) (bencode_int s)]
-    [(list? s) (bencode_lst s)]
     [(dict? s) (bencode_dic s)]
-    [else " "]))
+    [(list? s) (bencode_lst s)]
+    [(bytes? s) (bencode_str s)]
+    [else "unknown type"]))
   
 (define (bencode_str str)
-  (string-append (~v (string-length str)) ":" str))
+  (bytes-append (string->bytes/utf-8 (~v (bytes-length str))) #":" str))
 
 (define (bencode_int i)
-  (string-append "i" (~v i) "e"))
+  (bytes-append #"i" (string->bytes/utf-8 (~v i)) #"e"))
 
 (define (bencode_lst l)
-  (string-append
+  (bytes-append
    (foldl (lambda (e res)
-           (string-append res (bencode e))) "l" l)
-  "e"))
+           (bytes-append res (bencode e))) #"l" l)
+  #"e"))
 
 (define (bencode_dic d)
-  (string-append (foldl (lambda (e res)
-                          (string-append res (bencode_str (car e)) (bencode (cdr e))))
-                        "d" (dict->list d))
-                 "e"))
+  (bytes-append (foldl (lambda (e res)
+                          (bytes-append res (bencode_str (car e)) (bencode (cdr e))))
+                        #"d" (dict->list d))
+                 #"e"))
